@@ -1,11 +1,10 @@
 package com.vitthalvandana.user.dto;
 
 public class LoginRequest {
-    private String email;
-    private String password;
+    public String email;
+    public String password;
 
-    public LoginRequest() {
-    }
+    public LoginRequest() {}
 
     public LoginRequest(String email, String password) {
         this.email = email;
