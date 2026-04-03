@@ -1,44 +1,42 @@
 package com.vitthalvandana.common.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import java.time.LocalDateTime;
+import java.io.Serializable;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse<T> {
-    private boolean success;
+public class ApiResponse<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private int statusCode;
     private String message;
     private T data;
-    private LocalDateTime timestamp;
+    private boolean success;
 
-    public ApiResponse() {
-        this.timestamp = LocalDateTime.now();
-    }
+    public ApiResponse() {}
 
-    public ApiResponse(boolean success, String message, T data) {
-        this.success = success;
+    public ApiResponse(int statusCode, String message, T data, boolean success) {
+        this.statusCode = statusCode;
         this.message = message;
         this.data = data;
-        this.timestamp = LocalDateTime.now();
-    }
-
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data);
-    }
-
-    public static <T> ApiResponse<T> success(String message) {
-        return new ApiResponse<>(true, message, null);
-    }
-
-    public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
         this.success = success;
+    }
+
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(200, message, data, true);
+    }
+
+    public static <T> ApiResponse<T> created(T data, String message) {
+        return new ApiResponse<>(201, message, data, true);
+    }
+
+    public static <T> ApiResponse<T> error(int statusCode, String message) {
+        return new ApiResponse<>(statusCode, message, null, false);
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     public String getMessage() {
@@ -57,11 +55,11 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public boolean isSuccess() {
+        return success;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 }
