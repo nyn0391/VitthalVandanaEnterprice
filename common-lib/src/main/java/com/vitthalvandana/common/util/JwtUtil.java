@@ -1,61 +1,63 @@
-package com.vitthalvandana.common.util;
+package com.vitthalvandana.common.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.time.Instant;
 import java.util.Date;
 
 @ApplicationScoped
+@Startup
 public class JwtUtil {
 
-    @ConfigProperty(name = "jwt.secret", defaultValue = "your-secret-key-change-in-production")
+    @ConfigProperty(name = "jwt.secret", defaultValue = "your-secret-key-change-this-in-production")
     String jwtSecret;
 
-    @ConfigProperty(name = "jwt.issuer", defaultValue = "vitthal-vandana")
-    String jwtIssuer;
-
-    @ConfigProperty(name = "jwt.expiration.hours", defaultValue = "24")
-    int expirationHours;
+    @ConfigProperty(name = "jwt.expiration", defaultValue = "86400000")
+    long jwtExpiration;
 
     public String generateToken(String userId, String email) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+            Date now = new Date();
+            Date expiresAt = new Date(now.getTime() + jwtExpiration);
+
             return JWT.create()
-                    .withIssuer(jwtIssuer)
                     .withSubject(userId)
                     .withClaim("email", email)
-                    .withIssuedAt(new Date())
-                    .withExpiresAt(new Date(System.currentTimeMillis() + (long) expirationHours * 60 * 60 * 1000))
+                    .withIssuedAt(now)
+                    .withExpiresAt(expiresAt)
                     .sign(algorithm);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate JWT token", e);
+            throw new RuntimeException("Error generating JWT token", e);
         }
     }
 
-    public DecodedJWT verifyToken(String token) throws JWTVerificationException {
+    public String validateToken(String token) throws JWTVerificationException {
         try {
             Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
             return JWT.require(algorithm)
-                    .withIssuer(jwtIssuer)
                     .build()
-                    .verify(token);
+                    .verify(token)
+                    .getSubject();
         } catch (JWTVerificationException e) {
-            throw new JWTVerificationException("Invalid token", e);
+            throw new JWTVerificationException("Invalid JWT token", e);
         }
     }
 
-    public String getUserIdFromToken(String token) throws JWTVerificationException {
-        DecodedJWT jwt = verifyToken(token);
-        return jwt.getSubject();
-    }
-
-    public String getEmailFromToken(String token) throws JWTVerificationException {
-        DecodedJWT jwt = verifyToken(token);
-        return jwt.getClaim("email").asString();
+    public String getEmailFromToken(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+            return JWT.require(algorithm)
+                    .build()
+                    .verify(token)
+                    .getClaim("email")
+                    .asString();
+        } catch (JWTVerificationException e) {
+            throw new JWTVerificationException("Invalid JWT token", e);
+        }
     }
 }
