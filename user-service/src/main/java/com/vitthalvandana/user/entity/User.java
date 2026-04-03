@@ -1,9 +1,9 @@
 package com.vitthalvandana.user.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,37 +14,48 @@ public class User extends PanacheEntity {
     public String email;
 
     @Column(nullable = false)
-    public String password;
-
-    @Column(nullable = false)
     public String firstName;
 
     @Column(nullable = false)
     public String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
+    public String passwordHash;
+
+    @Column(nullable = false)
     public String phoneNumber;
 
     @Column(nullable = false)
-    public String role = "USER";
+    public String address;
 
     @Column(nullable = false)
-    public Boolean active = true;
+    public String city;
 
-    @Column(name = "created_at")
-    public LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false)
+    public String state;
 
-    @Column(name = "updated_at")
-    public LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(nullable = false)
+    public String zipCode;
+
+    @Column(nullable = false)
+    public String country;
+
+    @Column(nullable = false)
+    public LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    public LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    public Boolean isActive;
 
     public User() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.isActive = true;
     }
 
-    public User(String email, String password, String firstName, String lastName, String phoneNumber) {
-        this.email = email;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
+    public static User findByEmail(String email) {
+        return find("email", email).firstResult();
     }
 }
